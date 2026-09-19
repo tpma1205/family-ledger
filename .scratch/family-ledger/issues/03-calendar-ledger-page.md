@@ -4,12 +4,12 @@
 
 **Blocked by:** 02 — 記一筆存款 / 消費並看到餘額
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `ledger.daySummaries(deposits, expenses, yearMonth)` 與 `ledger.recordsOn(...)` + Vitest（跨月、閏年 2/29、同日多筆依 created_at 排序）
-- [ ] 月曆格：週一起始、當月天數正確、今天有標記、選中日有標記
-- [ ] 格內紅色消費小計、綠色 +存款；皆無則空白
-- [ ] 月份 ‹ › 切換；切到本月選中今天，其他月選中 1 號
-- [ ] 「回到本日」按鈕
-- [ ] 選中日紀錄清單取代 02 的「今日清單」
-- [ ] 表單日期預設為選中日；儲存後月曆小計與清單即時更新
+- [x] `ledger.daySummaries(deposits, expenses, yearMonth)` 與 `ledger.recordsOn(...)` + Vitest（跨月、閏年 2/29、同日多筆依 created_at 排序）
+- [x] 月曆格：週一起始、當月天數正確、今天有標記、選中日有標記
+- [x] 格內紅色消費小計、綠色 +存款；皆無則空白
+- [x] 月份 ‹ › 切換；切到本月選中今天，其他月選中 1 號
+- [x] 「回到本日」按鈕
+- [x] 選中日紀錄清單取代 02 的「今日清單」
+- [x] 表單日期預設為選中日；儲存後月曆小計與清單即時更新

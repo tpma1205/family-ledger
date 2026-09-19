@@ -4,10 +4,10 @@
 
 **Blocked by:** 01 — 專案骨架與登入
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `manifest.webmanifest`（名稱、icon 512/192、主題色、standalone）+ iOS `apple-touch-icon` meta
-- [ ] GitHub Actions：push main → build → 部署 Pages，secrets 注入 `VITE_SUPABASE_URL`、`VITE_SUPABASE_PUBLISHABLE_KEY`
-- [ ] GitHub Actions：每 3 天排程對 Supabase 執行一次輕量查詢
-- [ ] README：列出成員要手動完成的步驟（填 secrets、Pages source 改 GitHub Actions、加到主畫面）
-- [ ] repo 已推到 `git@github.com:tpma1205/family-ledger.git`
+- [x] `manifest.webmanifest`（名稱、icon 512/192、主題色、standalone）+ iOS `apple-touch-icon` meta
+- [x] GitHub Actions：push main → build → 部署 Pages，secrets 注入 `VITE_SUPABASE_URL`、`VITE_SUPABASE_PUBLISHABLE_KEY`
+- [x] GitHub Actions：每 3 天排程對 Supabase 執行一次輕量查詢
+- [x] README：列出成員要手動完成的步驟（填 secrets、Pages source 改 GitHub Actions、加到主畫面）
+- [x] repo 已推到 `git@github.com:tpma1205/family-ledger.git`
