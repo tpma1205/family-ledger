@@ -84,7 +84,7 @@
 
 ### 登入
 
-- Supabase Auth，email + 密碼。兩個帳號由建置時手動建立，初始密碼由成員自行保管與更改，不寫入任何檔案。後台建議關閉「Enable Sign Ups」，但真正的存取邊界是 RLS + `members` 表。
+- Supabase Auth，email + 密碼。兩個成員帳號由建置時手動建立（email 不寫在 repo，repo 是公開的），初始密碼由成員自行保管與更改，不寫入任何檔案。後台建議關閉「Enable Sign Ups」，但真正的存取邊界是 RLS + `members` 表。
 - Session 持久化採 Supabase client 預設（localStorage + refresh token 自動更新），達成「記住我」。
 - 未登入時整個 app 只顯示登入頁；登入後進入記帳頁。提供登出。
 - 記錄者 = `auth.uid()`，由資料庫預設值填入，前端不選、不顯示。
