@@ -1,10 +1,29 @@
 # 家庭記帳
 
-兩人 AA 制共同錢包記帳。前端 Vue 3 + Vite，資料與登入用 Supabase，部署在 GitHub Pages。
+兩個人共用一個錢包的記帳 app。各自把錢存進共同錢包，共同開銷從裡面扣，隨時看得到還剩多少、錢花去哪。
 
-- 術語：[CONTEXT.md](CONTEXT.md)
-- 決策：[docs/adr](docs/adr)
-- 規格：[docs/spec.md](docs/spec.md)
+網址：https://tpma1205.github.io/family-ledger/ （加到手機主畫面後像一般 app 一樣開啟）
+
+## 功能
+
+**記帳**
+- 月曆一眼看到每天花了多少（紅）、存了多少（綠），頂端固定顯示錢包餘額
+- 點任一天看該日明細；按「+」新增，日期自動帶入選中的那天
+- 消費：金額、分類（食物 / 衣物 / 居家 / 交通 / 教育 / 娛樂 / 其他）、內容（選填）
+- 存款：金額、日期
+- 點紀錄即可修改或刪除
+- 「回到本日」一鍵跳回今天
+
+**分析**
+- 依日 / 月 / 年切換區間、前後翻頁
+- 甜甜圈圖：中心是總消費，外圈標各分類佔比
+- 分類明細：筆數與金額，由大到小
+- 趨勢柱狀圖：月看每天、年看每月
+
+**其他**
+- 只有兩位成員能登入，登入一次後手機會記住
+- 兩人看到的是同一份帳，重新整理即更新
+- 手機優先，電腦瀏覽器也能用
 
 ## 本機開發
 
@@ -12,32 +31,7 @@
 cp .env.example .env.local   # 填入 Supabase URL 與 publishable key
 npm install
 npm run dev
-```
-
-測試（只測 `src/lib/ledger.js` 這個純函式模組）：
-
-```bash
 npm test
 ```
 
-## 第一次部署要手動做的事
-
-1. GitHub repo → Settings → Secrets and variables → Actions → 新增
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY`
-2. GitHub repo → Settings → Pages → Source 選 **GitHub Actions**
-3. push 到 `main`，等 Actions 跑完，網址是 `https://<帳號>.github.io/family-ledger/`
-4. Supabase 後台 → Authentication → Sign In / Providers → 關閉 **Allow new users to sign up**
-   （即使不關，RLS 也只允許 `members` 表列出的兩個帳號讀寫；關掉是多一層保險）
-5. 兩支手機用瀏覽器開網址 → 分享 → **加到主畫面**
-
-## 資料庫
-
-Schema 在 Supabase 專案 `family-ledger` 的 migration `initial_wallet_schema`：
-
-- `members`：共同錢包的兩位成員（auth user id）
-- `deposits`：存款（金額正整數、日期、記錄者）
-- `expenses`：消費（金額正整數、日期、分類、內容、記錄者）
-- RLS：只有 `members` 內的帳號能讀寫；記錄者由 `auth.uid()` 預設填入
-
-`.github/workflows/keepalive.yml` 每 3 天呼叫一次 `ping()`，避免免費專案被暫停。
+push 到 `main` 會自動部署。設計文件：[CONTEXT.md](CONTEXT.md)、[docs/spec.md](docs/spec.md)、[docs/adr](docs/adr)。
