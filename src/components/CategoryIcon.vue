@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue'
-import { CATEGORY_MAP, DEPOSIT_STYLE } from '../lib/categories.js'
+import { categoryOf, DEPOSIT_STYLE } from '../lib/categories.js'
 
 const props = defineProps({ category: String, kind: { type: String, default: 'expense' }, size: { type: Number, default: 34 } })
-const style = computed(() => (props.kind === 'deposit' ? DEPOSIT_STYLE : CATEGORY_MAP[props.category] ?? CATEGORY_MAP.other))
+const style = computed(() => (props.kind === 'deposit' ? DEPOSIT_STYLE : categoryOf(props.category)))
 </script>
 
 <template>

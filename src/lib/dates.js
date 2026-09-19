@@ -1,7 +1,12 @@
-import { format } from 'date-fns'
+import { format, addMonths, addYears, addDays } from 'date-fns'
 
 export const todayStr = () => format(new Date(), 'yyyy-MM-dd')
 export const toYearMonth = (dateStr) => dateStr.slice(0, 7)
+
+const parse = (dateStr) => {
+  const [y, m, d = 1] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
 
 // 'YYYY-MM' → 該月月曆格子（週一起始），前後補空格
 export function calendarCells(yearMonth) {
@@ -17,20 +22,22 @@ export function calendarCells(yearMonth) {
   return cells
 }
 
-export function shiftMonth(yearMonth, delta) {
-  const [y, m] = yearMonth.split('-').map(Number)
-  const d = new Date(y, m - 1 + delta, 1)
-  return format(d, 'yyyy-MM')
-}
+export const shiftMonth = (yearMonth, delta) => format(addMonths(parse(yearMonth), delta), 'yyyy-MM')
+// 以下三個保留完整日期；月底會自動夾到目標月的最後一天（1/31 → 2/28）
+export const shiftDay = (dateStr, delta) => format(addDays(parse(dateStr), delta), 'yyyy-MM-dd')
+export const shiftMonthKeepDay = (dateStr, delta) => format(addMonths(parse(dateStr), delta), 'yyyy-MM-dd')
+export const shiftYearKeepDay = (dateStr, delta) => format(addYears(parse(dateStr), delta), 'yyyy-MM-dd')
 
-export function shiftDay(dateStr, delta) {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return format(new Date(y, m - 1, d + delta), 'yyyy-MM-dd')
+// 中文顯示
+export const formatYearMonth = (yearMonth) => {
+  const [y, m] = yearMonth.split('-')
+  return `${y} 年 ${Number(m)} 月`
 }
-
-export function shiftYear(dateStr, delta) {
-  const [y] = dateStr.split('-').map(Number)
-  return `${y + delta}${dateStr.slice(4)}`
+export const formatDate = (dateStr) => {
+  const [y, m, d] = dateStr.split('-')
+  return `${y} 年 ${Number(m)} 月 ${Number(d)} 日`
 }
-
-export const fmtMoney = (n) => n.toLocaleString('zh-TW')
+export const formatMonthDay = (dateStr) => {
+  const [, m, d] = dateStr.split('-')
+  return `${Number(m)} 月 ${Number(d)} 日`
+}

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { CATEGORY_MAP } from '../lib/categories.js'
-import { fmtMoney } from '../lib/dates.js'
+import { categoryOf } from '../lib/categories.js'
+import { fmtMoney } from '../lib/money.js'
 
 const props = defineProps({ byCategory: Array, total: Number })
 
@@ -26,8 +26,8 @@ const slices = computed(() => {
     const slice = {
       ...c,
       path,
-      color: CATEGORY_MAP[c.category].color,
-      iconPath: CATEGORY_MAP[c.category].path,
+      color: categoryOf(c.category).color,
+      iconPath: categoryOf(c.category).path,
       lx, ly,
       right: Math.cos(mid) >= 0,
       showLabel: c.ratio >= 0.04,
@@ -43,7 +43,7 @@ const slices = computed(() => {
     <circle v-if="!byCategory.length" :cx="CX" :cy="CY" :r="R" fill="none" stroke="#e3e9ef" :stroke-width="W" />
     <path v-for="s in slices" :key="s.category" :d="s.path" fill="none" :stroke="s.color" :stroke-width="W" />
 
-    <text :x="CX" :y="CY - 8" class="center-label">支出</text>
+    <text :x="CX" :y="CY - 8" class="center-label">消費</text>
     <text :x="CX" :y="CY + 18" class="center-amount">${{ fmtMoney(total) }}</text>
 
     <g v-for="s in slices.filter((s) => s.showLabel)" :key="'l' + s.category">

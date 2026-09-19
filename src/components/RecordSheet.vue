@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { CATEGORIES } from '../lib/categories.js'
 import CategoryIcon from './CategoryIcon.vue'
 
@@ -7,6 +7,7 @@ const props = defineProps({
   mode: { type: String, default: 'create' }, // create | edit
   record: Object, // edit 時帶入，含 kind
   defaultDate: String,
+  busy: Boolean,
 })
 const emit = defineEmits(['save', 'delete', 'close'])
 
@@ -17,7 +18,10 @@ const date = ref(props.record?.date ?? props.defaultDate)
 const category = ref(props.record?.category ?? 'food')
 const note = ref(props.record?.note ?? '')
 const error = ref('')
-const busy = ref(false)
+const amountInput = ref(null)
+
+// v-if 動態掛載時 autofocus 不可靠，明確 focus 一次
+onMounted(() => amountInput.value?.focus())
 
 const amountValue = computed(() => Number(amount.value))
 const valid = computed(() => /^\d+$/.test(amount.value) && amountValue.value > 0 && date.value)
@@ -31,14 +35,12 @@ async function submit() {
     error.value = '請輸入大於 0 的整數金額'
     return
   }
-  busy.value = true
   const fields = { amount: amountValue.value, date: date.value }
   if (kind.value === 'expense') {
     fields.category = category.value
     fields.note = note.value.trim() || null
   }
   emit('save', { kind: kind.value, id: props.record?.id, fields })
-  busy.value = false
 }
 
 function del() {
@@ -60,12 +62,12 @@ function del() {
       <label class="amount-field" :class="kind">
         <span class="currency">$</span>
         <input
+          ref="amountInput"
           :value="amount"
           type="text"
           inputmode="numeric"
           pattern="[0-9]*"
           placeholder="0"
-          autofocus
           enterkeyhint="done"
           @input="onAmountInput"
         />
@@ -100,8 +102,8 @@ function del() {
       <p v-if="error" class="error">{{ error }}</p>
 
       <div class="actions">
-        <button v-if="isEdit" type="button" class="delete" @click="del">刪除</button>
-        <button type="submit" class="save" :disabled="busy">{{ isEdit ? '儲存變更' : '儲存' }}</button>
+        <button v-if="isEdit" type="button" class="delete" :disabled="busy" @click="del">刪除</button>
+        <button type="submit" class="save" :disabled="busy">{{ busy ? '儲存中…' : isEdit ? '儲存變更' : '儲存' }}</button>
       </div>
     </form>
   </div>

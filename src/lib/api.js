@@ -2,6 +2,7 @@
 import { supabase } from './supabase.js'
 
 const FRIENDLY = '無法連線，請稍後再試'
+const PAGE = 1000 // Supabase 單次回應上限，超過要分頁
 
 function unwrap({ data, error }) {
   if (error) {
@@ -11,11 +12,17 @@ function unwrap({ data, error }) {
   return data
 }
 
+async function fetchAll(table) {
+  const rows = []
+  for (let from = 0; ; from += PAGE) {
+    const page = await supabase.from(table).select('*').order('date').order('created_at').range(from, from + PAGE - 1).then(unwrap)
+    rows.push(...page)
+    if (page.length < PAGE) return rows
+  }
+}
+
 export async function listAll() {
-  const [deposits, expenses] = await Promise.all([
-    supabase.from('deposits').select('*').order('date').then(unwrap),
-    supabase.from('expenses').select('*').order('date').then(unwrap),
-  ])
+  const [deposits, expenses] = await Promise.all([fetchAll('deposits'), fetchAll('expenses')])
   return { deposits, expenses }
 }
 

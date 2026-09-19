@@ -19,3 +19,6 @@ export const CATEGORIES = [
 export const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map((c) => [c.key, c]))
 
 export const DEPOSIT_STYLE = { label: '存款', color: '#1f9d6f', path: 'M12 5v14M5 12h14' }
+
+// 未知分類一律當「其他」，避免舊資料或手動改庫時整頁炸掉
+export const categoryOf = (key) => CATEGORY_MAP[key] ?? CATEGORY_MAP.other

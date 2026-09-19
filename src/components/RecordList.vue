@@ -1,19 +1,16 @@
 <script setup>
 import { computed } from 'vue'
-import { CATEGORY_MAP } from '../lib/categories.js'
-import { fmtMoney, todayStr } from '../lib/dates.js'
+import { categoryOf } from '../lib/categories.js'
+import { todayStr, formatDate, formatMonthDay } from '../lib/dates.js'
+import { fmtMoney } from '../lib/money.js'
 import CategoryIcon from './CategoryIcon.vue'
 
 const props = defineProps({ date: String, records: Array, loading: Boolean })
 defineEmits(['edit'])
 
-const title = computed(() => {
-  const [y, m, d] = props.date.split('-')
-  const base = `${Number(m)} 月 ${Number(d)} 日`
-  return props.date === todayStr() ? `今天 ${base}` : `${y} 年 ${base}`
-})
+const title = computed(() => (props.date === todayStr() ? `今天 ${formatMonthDay(props.date)}` : formatDate(props.date)))
 const dayTotal = computed(() => props.records.filter((r) => r.kind === 'expense').reduce((s, r) => s + r.amount, 0))
-const label = (r) => (r.kind === 'deposit' ? '存入共同錢包' : r.note || CATEGORY_MAP[r.category].label)
+const label = (r) => (r.kind === 'deposit' ? '存入共同錢包' : r.note || categoryOf(r.category).label)
 </script>
 
 <template>
@@ -30,7 +27,7 @@ const label = (r) => (r.kind === 'deposit' ? '存入共同錢包' : r.note || CA
           <CategoryIcon :kind="r.kind" :category="r.category" />
           <span class="text">
             <span class="name">{{ label(r) }}</span>
-            <span v-if="r.kind === 'expense' && r.note" class="cat">{{ CATEGORY_MAP[r.category].label }}</span>
+            <span v-if="r.kind === 'expense' && r.note" class="cat">{{ categoryOf(r.category).label }}</span>
           </span>
           <span class="amount num" :class="r.kind">{{ r.kind === 'deposit' ? '+' : '' }}${{ fmtMoney(r.amount) }}</span>
         </button>

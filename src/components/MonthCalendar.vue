@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { calendarCells, todayStr } from '../lib/dates.js'
+import { shortMoney as short } from '../lib/money.js'
 
 const props = defineProps({ yearMonth: String, selected: String, summaries: Object })
 defineEmits(['select'])
@@ -9,12 +10,6 @@ const cells = computed(() => calendarCells(props.yearMonth))
 const today = todayStr()
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日']
 
-// 格子太小，金額縮寫：1.2k、1.5萬
-function short(n) {
-  if (n >= 10000) return (n / 10000).toFixed(n % 10000 === 0 ? 0 : 1) + '萬'
-  if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'k'
-  return String(n)
-}
 </script>
 
 <template>

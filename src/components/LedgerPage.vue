@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { useLedger } from '../composables/useLedger.js'
 import { useAuth } from '../composables/useAuth.js'
 import { daySummaries, recordsOn } from '../lib/ledger.js'
-import { todayStr, toYearMonth, shiftMonth, fmtMoney } from '../lib/dates.js'
+import { todayStr, toYearMonth, shiftMonth, formatYearMonth } from '../lib/dates.js'
+import { fmtMoney } from '../lib/money.js'
 import MonthCalendar from './MonthCalendar.vue'
 import RecordList from './RecordList.vue'
 import RecordSheet from './RecordSheet.vue'
@@ -24,26 +25,31 @@ function goMonth(delta) {
 }
 const goToday = () => (selectedDay.value = todayStr())
 
-const monthTitle = computed(() => {
-  const [y, m] = yearMonth.value.split('-')
-  return `${y} 年 ${Number(m)} 月`
-})
+const monthTitle = computed(() => formatYearMonth(yearMonth.value))
 
 // 表單：null | { mode: 'create' } | { mode: 'edit', record }
 const sheet = ref(null)
+const saving = ref(false)
 const openCreate = () => (sheet.value = { mode: 'create' })
 const openEdit = (record) => (sheet.value = { mode: 'edit', record })
 const closeSheet = () => (sheet.value = null)
 
 async function onSave({ kind, id, fields }) {
+  if (saving.value) return
+  saving.value = true
   const ok = id ? await update(kind, id, fields) : await create(kind, fields)
+  saving.value = false
   if (ok) {
     selectedDay.value = fields.date
     closeSheet()
   }
 }
 async function onDelete({ kind, id }) {
-  if (await remove(kind, id)) closeSheet()
+  if (saving.value) return
+  saving.value = true
+  const ok = await remove(kind, id)
+  saving.value = false
+  if (ok) closeSheet()
 }
 </script>
 
@@ -78,6 +84,7 @@ async function onDelete({ kind, id }) {
     :mode="sheet.mode"
     :record="sheet.record"
     :default-date="selectedDay"
+    :busy="saving"
     @save="onSave"
     @delete="onDelete"
     @close="closeSheet"
@@ -86,9 +93,12 @@ async function onDelete({ kind, id }) {
 
 <style scoped>
 .sky {
+  position: sticky;
+  top: 0;
+  z-index: 12;
   background: var(--sky);
   color: var(--sky-ink);
-  padding: calc(env(safe-area-inset-top) + 12px) 20px 44px;
+  padding: calc(env(safe-area-inset-top) + 12px) 20px 18px;
 }
 .top { display: flex; justify-content: space-between; align-items: center; }
 .brand { font-weight: 500; font-size: 15px; }
@@ -99,7 +109,7 @@ async function onDelete({ kind, id }) {
 .amount.negative { color: #a33a2a; }
 
 .calendar-card {
-  margin: -28px 12px 0;
+  margin: 12px 12px 0;
   background: var(--card);
   border-radius: var(--radius);
   padding: 12px 10px 10px;

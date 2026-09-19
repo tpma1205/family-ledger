@@ -12,5 +12,5 @@
 
 - Supabase 免費專案 7 天無資料庫活動會被暫停，需手動 restore。以 GitHub Actions 排程每 3 天 ping 一次資料庫來避免。
 - Supabase anon key 會出現在前端程式碼中，這是設計上允許的；安全邊界靠 RLS 與關閉公開註冊，不靠隱藏 key。
-- 隱私靠「Supabase 後台關閉 Sign Ups、只手動建立兩個帳號」達成，而非網頁自訂密碼。
+- 隱私靠 RLS 達成：`members` 表列出兩位成員的 auth id，policy 只放行這兩個 id。關閉 Sign Ups 只是多一層保險，不是安全邊界。
 - Supabase 專案：`family-ledger`（ref `serggavvusovsjufdrhb`，區域 ap-northeast-1 Tokyo），與另一個專案 `poyang-schedule` 完全獨立。

@@ -2,8 +2,9 @@
 import { ref, computed } from 'vue'
 import { useLedger } from '../composables/useLedger.js'
 import { periodStats } from '../lib/ledger.js'
-import { todayStr, shiftDay, shiftMonth, shiftYear, fmtMoney } from '../lib/dates.js'
-import { CATEGORY_MAP } from '../lib/categories.js'
+import { todayStr, shiftDay, shiftMonthKeepDay, shiftYearKeepDay, formatDate, formatYearMonth } from '../lib/dates.js'
+import { fmtMoney } from '../lib/money.js'
+import { categoryOf } from '../lib/categories.js'
 import DoughnutChart from './DoughnutChart.vue'
 import TrendChart from './TrendChart.vue'
 import CategoryIcon from './CategoryIcon.vue'
@@ -15,30 +16,18 @@ const anchor = ref(todayStr())
 
 const stats = computed(() => periodStats(expenses.value, { granularity: granularity.value, anchor: anchor.value }))
 
-const title = computed(() => {
-  const [y, m, d] = anchor.value.split('-')
-  if (granularity.value === 'day') return `${y} 年 ${Number(m)} 月 ${Number(d)} 日`
-  if (granularity.value === 'month') return `${y} 年 ${Number(m)} 月`
-  return `${y} 年`
-})
-
-function shift(delta) {
-  if (granularity.value === 'day') anchor.value = shiftDay(anchor.value, delta)
-  else if (granularity.value === 'month') anchor.value = shiftMonth(anchor.value.slice(0, 7), delta) + anchor.value.slice(7)
-  else anchor.value = shiftYear(anchor.value, delta)
-}
-const isNow = computed(() => {
-  const t = todayStr()
-  const len = { day: 10, month: 7, year: 4 }[granularity.value]
-  return anchor.value.slice(0, len) === t.slice(0, len)
-})
-
+// 每種粒度的行為集中在一張表
 const GRANULARITIES = [
-  { key: 'day', label: '日' },
-  { key: 'month', label: '月' },
-  { key: 'year', label: '年' },
+  { key: 'day', label: '日', prefixLen: 10, shift: shiftDay, title: formatDate, trendTitle: null },
+  { key: 'month', label: '月', prefixLen: 7, shift: shiftMonthKeepDay, title: (d) => formatYearMonth(d.slice(0, 7)), trendTitle: '每日消費' },
+  { key: 'year', label: '年', prefixLen: 4, shift: shiftYearKeepDay, title: (d) => `${d.slice(0, 4)} 年`, trendTitle: '每月消費' },
 ]
-const trendTitle = computed(() => (granularity.value === 'month' ? '每日消費' : '每月消費'))
+const current = computed(() => GRANULARITIES.find((g) => g.key === granularity.value))
+
+const title = computed(() => current.value.title(anchor.value))
+const trendTitle = computed(() => current.value.trendTitle)
+const shift = (delta) => (anchor.value = current.value.shift(anchor.value, delta))
+const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === todayStr().slice(0, current.value.prefixLen))
 </script>
 
 <template>
@@ -71,7 +60,7 @@ const trendTitle = computed(() => (granularity.value === 'month' ? '每日消費
     <ul v-else>
       <li v-for="c in stats.byCategory" :key="c.category">
         <CategoryIcon :category="c.category" :size="30" />
-        <span class="name">{{ CATEGORY_MAP[c.category].label }}</span>
+        <span class="name">{{ categoryOf(c.category).label }}</span>
         <span class="count num">{{ c.count }} 筆</span>
         <span class="amount num">${{ fmtMoney(c.amount) }}</span>
       </li>
