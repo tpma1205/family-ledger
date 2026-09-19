@@ -15,8 +15,8 @@ export function useAuth() {
   async function signIn(email, password) {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (!error) return
-    // 400 = 帳密錯；其他（含 fetch 失敗）視為連不上
-    throw new Error(error.status === 400 ? '帳號或密碼不正確' : '無法連線，請稍後再試')
+    // 只有明確的帳密錯才這樣講；其他（含 fetch 失敗、限流）視為連不上
+    throw new Error(error.code === 'invalid_credentials' ? '帳號或密碼不正確' : '無法連線，請稍後再試')
   }
   async function signOut() {
     await supabase.auth.signOut()

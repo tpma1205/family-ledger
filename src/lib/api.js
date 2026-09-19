@@ -15,7 +15,7 @@ function unwrap({ data, error }) {
 async function fetchAll(table) {
   const rows = []
   for (let from = 0; ; from += PAGE) {
-    const page = await supabase.from(table).select('*').order('date').order('created_at').range(from, from + PAGE - 1).then(unwrap)
+    const page = await supabase.from(table).select('*').order('date').order('created_at').order('id').range(from, from + PAGE - 1).then(unwrap)
     rows.push(...page)
     if (page.length < PAGE) return rows
   }

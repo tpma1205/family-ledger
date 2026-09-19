@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { calendarCells, todayStr } from '../lib/dates.js'
-import { shortMoney as short } from '../lib/money.js'
+import { shortMoney } from '../lib/money.js'
 
 const props = defineProps({ yearMonth: String, selected: String, summaries: Object })
 defineEmits(['select'])
@@ -24,8 +24,8 @@ const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日']
         @click="$emit('select', cell)"
       >
         <span class="day">{{ Number(cell.slice(8)) }}</span>
-        <span v-if="summaries[cell]?.expenseTotal" class="sum expense num">{{ short(summaries[cell].expenseTotal) }}</span>
-        <span v-if="summaries[cell]?.depositTotal" class="sum deposit num">+{{ short(summaries[cell].depositTotal) }}</span>
+        <span v-if="summaries[cell]?.expenseTotal" class="sum expense num">{{ shortMoney(summaries[cell].expenseTotal) }}</span>
+        <span v-if="summaries[cell]?.depositTotal" class="sum deposit num">+{{ shortMoney(summaries[cell].depositTotal) }}</span>
       </button>
     </template>
   </div>

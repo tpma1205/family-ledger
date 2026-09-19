@@ -34,22 +34,26 @@ const openCreate = () => (sheet.value = { mode: 'create' })
 const openEdit = (record) => (sheet.value = { mode: 'edit', record })
 const closeSheet = () => (sheet.value = null)
 
-async function onSave({ kind, id, fields }) {
-  if (saving.value) return
+// 一次只允許一個寫入進行中，避免雙擊重複送出
+async function guarded(action) {
+  if (saving.value) return false
   saving.value = true
-  const ok = id ? await update(kind, id, fields) : await create(kind, fields)
-  saving.value = false
+  try {
+    return await action()
+  } finally {
+    saving.value = false
+  }
+}
+
+async function onSave({ kind, id, fields }) {
+  const ok = await guarded(() => (id ? update(kind, id, fields) : create(kind, fields)))
   if (ok) {
     selectedDay.value = fields.date
     closeSheet()
   }
 }
 async function onDelete({ kind, id }) {
-  if (saving.value) return
-  saving.value = true
-  const ok = await remove(kind, id)
-  saving.value = false
-  if (ok) closeSheet()
+  if (await guarded(() => remove(kind, id))) closeSheet()
 }
 </script>
 

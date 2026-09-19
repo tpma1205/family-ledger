@@ -30,7 +30,7 @@ function onAmountInput(e) {
   amount.value = e.target.value.replace(/\D/g, '')
 }
 
-async function submit() {
+function submit() {
   if (!valid.value) {
     error.value = '請輸入大於 0 的整數金額'
     return

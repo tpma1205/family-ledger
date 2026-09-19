@@ -84,7 +84,7 @@
 
 ### 登入
 
-- Supabase Auth，email + 密碼。兩個帳號由建置時手動建立；後台建議關閉「Enable Sign Ups」，但真正的存取邊界是 RLS + `members` 表，初始密碼由成員自行保管與更改，不寫入任何檔案。
+- Supabase Auth，email + 密碼。兩個帳號由建置時手動建立，初始密碼由成員自行保管與更改，不寫入任何檔案。後台建議關閉「Enable Sign Ups」，但真正的存取邊界是 RLS + `members` 表。
 - Session 持久化採 Supabase client 預設（localStorage + refresh token 自動更新），達成「記住我」。
 - 未登入時整個 app 只顯示登入頁；登入後進入記帳頁。提供登出。
 - 記錄者 = `auth.uid()`，由資料庫預設值填入，前端不選、不顯示。
@@ -96,7 +96,7 @@
 - **deposits**：id、金額（正整數，資料庫 CHECK > 0）、日期（`date`）、記錄者（預設 `auth.uid()`）、`created_at`。
 - **expenses**：id、金額（正整數，CHECK > 0）、日期（`date`）、分類（限定七值的 enum 或 CHECK）、內容（可空文字）、記錄者、`created_at`。
 
-- 另有 **members** 表列出兩位成員的 auth id。兩張表皆啟用 RLS：只有 `members` 內的帳號可讀寫全部列（兩人共用一個錢包，不按記錄者隔離）；即使有人註冊成功也看不到資料。匿名不可存取。
+- 另有 **members** 表列出兩位成員的 auth id（RLS：成員可讀、不可寫）。存款與消費兩張表皆啟用 RLS：只有 `members` 內的帳號可讀寫全部列（兩人共用一個錢包，不按記錄者隔離）；即使有人註冊成功也看不到資料。匿名不可存取。
 - 需明確 `GRANT` 給 `authenticated` 角色（上一個專案曾因 Supabase 預設不自動 expose 新表而 401，此處不重蹈）。
 - 餘額不存表，前端以 Σdeposits − Σexpenses 計算。
 - 分類的圖示與顏色是前端常數，不存資料庫。
@@ -149,6 +149,6 @@
 ## Further Notes
 
 - 本機無 `gh` CLI 且 repo 未設定 issue tracker，spec 以本檔案代替 issue；若之後跑 `/setup-matt-pocock-skills`，可將本檔內容搬進 GitHub Issues。
-- Supabase publishable key 出現在前端 bundle 是預期行為；安全邊界是 RLS + 關閉註冊。
+- Supabase publishable key 出現在前端 bundle 是預期行為；安全邊界是 RLS + `members` 表；關閉註冊只是保險。
 - 上一個專案（poyang-schedule）的 FullCalendar 版本踩雷與 GRANT 踩雷都記在該專案記憶中；本專案不用 FullCalendar（月曆自己畫，需求只有月格 + 小計），但 GRANT 要記得做。
 - 建置後仍需成員手動完成：GitHub repo Settings → Secrets 填入 `VITE_SUPABASE_URL`、`VITE_SUPABASE_PUBLISHABLE_KEY`；Pages source 改為 GitHub Actions；兩支手機各自「加到主畫面」。
