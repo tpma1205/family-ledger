@@ -1,0 +1,19 @@
+# Supabase 免費專案 7 天沒有資料庫活動會被暫停；每 3 天呼叫一次 ping() 函式。
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: '0 2 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call ping()
+        run: |
+          curl --fail --silent --show-error -X POST \
+            "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/rpc/ping" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" \
+            -H "Content-Type: application/json" -d '{}'
