@@ -122,10 +122,13 @@ function del() {
 .sheet {
   width: 100%;
   max-width: 520px;
+  box-sizing: border-box;
+  overflow: hidden;
   background: var(--card);
   border-radius: 20px 20px 0 0;
   padding: 8px 18px calc(18px + env(safe-area-inset-bottom));
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   animation: rise .22s ease-out;
 }
@@ -159,22 +162,31 @@ h2 { margin: 0; font-size: 16px; font-weight: 500; text-align: center; }
   border-radius: 0;
 }
 .amount-field input::placeholder { color: currentColor; opacity: .3; }
+.amount-field input:focus, .amount-field input:focus-visible { outline: none; border-bottom-width: 3px; }
 
 .field { display: flex; align-items: center; gap: 12px; font-size: 14px; }
 .field span { color: var(--muted); width: 36px; flex: none; }
 .field input {
-  flex: 1;
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
   height: 42px;
   border: 1px solid var(--hair);
   border-radius: 10px;
   padding: 0 12px;
   font-size: 16px;
   background: var(--page);
-  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
+.field input[type=date] { text-align: center; }
+.field input:focus, .field input:focus-visible { outline: none; border-color: var(--sky-deep); }
+/* iOS date input 內部容器也要允許縮小 */
+.field input::-webkit-date-and-time-value { text-align: center; min-width: 0; }
 
-.cats { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cats { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .cats button {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -190,7 +202,8 @@ h2 { margin: 0; font-size: 16px; font-weight: 500; text-align: center; }
 .error { margin: -4px 0 0; color: var(--expense); font-size: 13px; text-align: center; }
 .actions { display: flex; gap: 10px; }
 .save {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   height: 48px;
   border-radius: 12px;
   background: var(--sky-deep);

@@ -63,7 +63,12 @@ input {
   padding: 0 12px;
   font-size: 16px;
   background: var(--page);
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  width: 100%;
 }
+input:focus { border-color: var(--sky-deep); }
 button[type=submit] {
   height: 48px;
   border-radius: 12px;

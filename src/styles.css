@@ -29,10 +29,14 @@ body {
 }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; padding: 0; }
-button:focus-visible, input:focus-visible { outline: 2px solid var(--sky-deep); outline-offset: 2px; }
+button:focus-visible { outline: 2px solid var(--sky-deep); outline-offset: 2px; }
+input:focus { outline: none; }
 
+/* overflow-x: clip 不會產生捲動容器，sticky 頂欄仍有效 */
+html, body { overflow-x: clip; }
 #app {
   max-width: 520px;
+  overflow-x: clip;
   margin: 0 auto;
   min-height: 100dvh;
   background: var(--page);
