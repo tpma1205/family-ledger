@@ -89,7 +89,7 @@ function del() {
             :class="{ on: category === c.key }"
             @click="category = c.key"
           >
-            <CategoryIcon :category="c.key" :size="38" />
+            <CategoryIcon :category="c.key" :size="42" />
             <span>{{ c.label }}</span>
           </button>
         </div>
@@ -184,14 +184,14 @@ h2 { margin: 0; font-size: 16px; font-weight: 500; text-align: center; }
 /* iOS date input 內部容器也要允許縮小 */
 .field input::-webkit-date-and-time-value { text-align: center; min-width: 0; }
 
-.cats { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 4px; }
 .cats button {
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   padding: 6px 0 4px;
   border-radius: 10px;
