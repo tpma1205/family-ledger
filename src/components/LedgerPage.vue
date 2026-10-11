@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useLedger } from '../composables/useLedger.js'
 import { useAuth } from '../composables/useAuth.js'
-import { useToday } from '../composables/useToday.js'
+import { useToday, followToday } from '../composables/useToday.js'
 import { daySummaries, recordsOn } from '../lib/ledger.js'
 import { toYearMonth, shiftMonth, formatYearMonth } from '../lib/dates.js'
 import { fmtMoney } from '../lib/money.js'
@@ -18,8 +18,7 @@ const selectedDay = ref(today.value)
 const yearMonth = computed(() => toYearMonth(selectedDay.value))
 const onToday = computed(() => selectedDay.value === today.value)
 
-// 跨日：選中日停在舊的今天就跟著走；刻意選了別天則不動
-watch(today, (next, prev) => { if (selectedDay.value === prev) selectedDay.value = next })
+followToday(selectedDay)
 
 function confirmSignOut() {
   if (window.confirm('確定要登出嗎？')) signOut()

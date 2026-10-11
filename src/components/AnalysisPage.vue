@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useLedger } from '../composables/useLedger.js'
-import { useToday } from '../composables/useToday.js'
+import { useToday, followToday } from '../composables/useToday.js'
 import { periodStats } from '../lib/ledger.js'
 import { shiftDay, shiftMonthKeepDay, shiftYearKeepDay, formatDate, formatYearMonth } from '../lib/dates.js'
 import { fmtMoney } from '../lib/money.js'
@@ -15,9 +15,7 @@ const { expenses } = useLedger()
 const today = useToday()
 const granularity = ref('month')
 const anchor = ref(today.value)
-
-// 跨日：錨點停在舊的今天就跟著走，與記帳頁的選中日相同
-watch(today, (next, prev) => { if (anchor.value === prev) anchor.value = next })
+followToday(anchor)
 
 const stats = computed(() => periodStats(expenses.value, { granularity: granularity.value, anchor: anchor.value }))
 

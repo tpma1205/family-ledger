@@ -149,7 +149,10 @@ function del() {
   width: 100%;
   max-width: 520px;
   box-sizing: border-box;
-  overflow: hidden;
+  /* 一般 iPhone 不需捲動；矮螢幕（SE、橫向）退而可捲，✓ 不會被切掉 */
+  max-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: var(--card);
   border-radius: 20px 20px 0 0;
   padding: 14px 18px calc(10px + env(safe-area-inset-bottom));
