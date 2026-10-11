@@ -21,6 +21,10 @@ const onToday = computed(() => selectedDay.value === today.value)
 // 跨日：選中日停在舊的今天就跟著走；刻意選了別天則不動
 watch(today, (next, prev) => { if (selectedDay.value === prev) selectedDay.value = next })
 
+function confirmSignOut() {
+  if (window.confirm('確定要登出嗎？')) signOut()
+}
+
 const summaries = computed(() => daySummaries(deposits.value, expenses.value, yearMonth.value))
 const dayRecords = computed(() => recordsOn(deposits.value, expenses.value, selectedDay.value))
 
@@ -66,7 +70,7 @@ async function onDelete({ kind, id }) {
   <header class="sky">
     <div class="top">
       <span class="brand">家庭記帳</span>
-      <button class="logout" @click="signOut">登出</button>
+      <button class="logout" @click="confirmSignOut">登出</button>
     </div>
     <div class="balance">
       <span class="label">錢包餘額</span>

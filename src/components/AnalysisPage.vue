@@ -23,9 +23,9 @@ const stats = computed(() => periodStats(expenses.value, { granularity: granular
 
 // 每種粒度的行為集中在一張表
 const GRANULARITIES = [
-  { key: 'day', label: '日', prefixLen: 10, shift: shiftDay, title: formatDate, trendTitle: null },
-  { key: 'month', label: '月', prefixLen: 7, shift: shiftMonthKeepDay, title: (d) => formatYearMonth(d.slice(0, 7)), trendTitle: '每日消費' },
-  { key: 'year', label: '年', prefixLen: 4, shift: shiftYearKeepDay, title: (d) => `${d.slice(0, 4)} 年`, trendTitle: '每月消費' },
+  { key: 'day', label: '日', prefixLen: 10, nowLabel: '回到本日', shift: shiftDay, title: formatDate, trendTitle: null },
+  { key: 'month', label: '月', prefixLen: 7, nowLabel: '回到本月', shift: shiftMonthKeepDay, title: (d) => formatYearMonth(d.slice(0, 7)), trendTitle: '每日消費' },
+  { key: 'year', label: '年', prefixLen: 4, nowLabel: '回到今年', shift: shiftYearKeepDay, title: (d) => `${d.slice(0, 4)} 年`, trendTitle: '每月消費' },
 ]
 const current = computed(() => GRANULARITIES.find((g) => g.key === granularity.value))
 
@@ -52,7 +52,7 @@ const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === 
       <span class="title">{{ title }}</span>
       <button class="arrow" aria-label="下一個" @click="shift(1)">›</button>
     </div>
-    <button v-if="!isNow" class="now" @click="anchor = today">回到現在</button>
+    <button v-if="!isNow" class="now" @click="anchor = today">{{ current.nowLabel }}</button>
   </header>
 
   <section class="card doughnut">
@@ -67,6 +67,7 @@ const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === 
         <CategoryIcon :category="c.category" :size="30" />
         <span class="name">{{ categoryOf(c.category).label }}</span>
         <span class="count num">{{ c.count }} 筆</span>
+        <span class="pct num">{{ Math.round(c.ratio * 100) }}%</span>
         <span class="amount num">${{ fmtMoney(c.amount) }}</span>
       </li>
     </ul>
@@ -103,6 +104,7 @@ li { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
 li + li { border-top: 1px solid var(--hair); }
 .name { flex: 1; font-size: 15px; }
 .count { font-size: 13px; color: var(--muted); }
+.pct { font-size: 13px; color: var(--muted); min-width: 36px; text-align: right; }
 .amount { font-size: 16px; font-weight: 500; min-width: 80px; text-align: right; }
 .empty { margin: 0; color: var(--muted); font-size: 14px; }
 </style>
