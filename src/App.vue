@@ -3,17 +3,25 @@ import { ref, watch } from 'vue'
 import { useAuth } from './composables/useAuth.js'
 import { useLedger } from './composables/useLedger.js'
 import { useToast } from './composables/useToast.js'
+import { syncToday } from './composables/useToday.js'
 import LoginPage from './components/LoginPage.vue'
 import LedgerPage from './components/LedgerPage.vue'
 import AnalysisPage from './components/AnalysisPage.vue'
 import TabBar from './components/TabBar.vue'
 
 const { session } = useAuth()
-const { refresh, error } = useLedger()
+const { refresh, reset, error } = useLedger()
 const toast = useToast()
 const tab = ref('ledger')
 
-watch(session, (s) => { if (s) refresh() }, { immediate: true })
+watch(session, (s) => { if (s) refresh(); else if (s === null) reset() }, { immediate: true })
+
+// 加到主畫面後沒有重新整理可按：回到前景時更新「今天」並重撈（不是即時訂閱）
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return
+  syncToday()
+  if (session.value) refresh()
+})
 watch(error, (msg) => { if (msg) toast.show(msg) })
 </script>
 

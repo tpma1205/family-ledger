@@ -1,29 +1,34 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useLedger } from '../composables/useLedger.js'
 import { useAuth } from '../composables/useAuth.js'
+import { useToday } from '../composables/useToday.js'
 import { daySummaries, recordsOn } from '../lib/ledger.js'
-import { todayStr, toYearMonth, shiftMonth, formatYearMonth } from '../lib/dates.js'
+import { toYearMonth, shiftMonth, formatYearMonth } from '../lib/dates.js'
 import { fmtMoney } from '../lib/money.js'
 import MonthCalendar from './MonthCalendar.vue'
 import RecordList from './RecordList.vue'
 import RecordSheet from './RecordSheet.vue'
 
-const { deposits, expenses, walletBalance, loading, create, update, remove } = useLedger()
+const { deposits, expenses, walletBalance, loading, loaded, loadFailed, refresh, create, update, remove } = useLedger()
 const { signOut } = useAuth()
+const today = useToday()
 
-const selectedDay = ref(todayStr())
+const selectedDay = ref(today.value)
 const yearMonth = computed(() => toYearMonth(selectedDay.value))
-const onToday = computed(() => selectedDay.value === todayStr())
+const onToday = computed(() => selectedDay.value === today.value)
+
+// 跨日：選中日停在舊的今天就跟著走；刻意選了別天則不動
+watch(today, (next, prev) => { if (selectedDay.value === prev) selectedDay.value = next })
 
 const summaries = computed(() => daySummaries(deposits.value, expenses.value, yearMonth.value))
 const dayRecords = computed(() => recordsOn(deposits.value, expenses.value, selectedDay.value))
 
 function goMonth(delta) {
   const next = shiftMonth(yearMonth.value, delta)
-  selectedDay.value = next === toYearMonth(todayStr()) ? todayStr() : next + '-01'
+  selectedDay.value = next === toYearMonth(today.value) ? today.value : next + '-01'
 }
-const goToday = () => (selectedDay.value = todayStr())
+const goToday = () => (selectedDay.value = today.value)
 
 const monthTitle = computed(() => formatYearMonth(yearMonth.value))
 
@@ -65,7 +70,12 @@ async function onDelete({ kind, id }) {
     </div>
     <div class="balance">
       <span class="label">錢包餘額</span>
-      <span class="amount num" :class="{ negative: walletBalance < 0 }">${{ fmtMoney(walletBalance) }}</span>
+      <span v-if="loaded" class="amount num" :class="{ negative: walletBalance < 0 }">${{ fmtMoney(walletBalance) }}</span>
+      <span v-else-if="loadFailed && !loading" class="amount failed">
+        無法載入
+        <button class="retry" @click="refresh">重試</button>
+      </span>
+      <span v-else class="amount pending" aria-label="讀取中">—</span>
     </div>
   </header>
 
@@ -111,6 +121,9 @@ async function onDelete({ kind, id }) {
 .label { font-size: 13px; opacity: .8; }
 .amount { font-size: 40px; font-weight: 500; line-height: 1.15; letter-spacing: -.01em; }
 .amount.negative { color: #a33a2a; }
+.amount.pending { opacity: .4; }
+.amount.failed { display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 46px; }
+.retry { font-size: 13px; border: 1px solid currentColor; border-radius: 999px; padding: 4px 12px; }
 
 .calendar-card {
   margin: 12px 12px 0;

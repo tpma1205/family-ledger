@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useLedger } from '../composables/useLedger.js'
+import { useToday } from '../composables/useToday.js'
 import { periodStats } from '../lib/ledger.js'
-import { todayStr, shiftDay, shiftMonthKeepDay, shiftYearKeepDay, formatDate, formatYearMonth } from '../lib/dates.js'
+import { shiftDay, shiftMonthKeepDay, shiftYearKeepDay, formatDate, formatYearMonth } from '../lib/dates.js'
 import { fmtMoney } from '../lib/money.js'
 import { categoryOf } from '../lib/categories.js'
 import DoughnutChart from './DoughnutChart.vue'
@@ -11,8 +12,12 @@ import CategoryIcon from './CategoryIcon.vue'
 
 const { expenses } = useLedger()
 
+const today = useToday()
 const granularity = ref('month')
-const anchor = ref(todayStr())
+const anchor = ref(today.value)
+
+// 跨日：錨點停在舊的今天就跟著走，與記帳頁的選中日相同
+watch(today, (next, prev) => { if (anchor.value === prev) anchor.value = next })
 
 const stats = computed(() => periodStats(expenses.value, { granularity: granularity.value, anchor: anchor.value }))
 
@@ -27,7 +32,7 @@ const current = computed(() => GRANULARITIES.find((g) => g.key === granularity.v
 const title = computed(() => current.value.title(anchor.value))
 const trendTitle = computed(() => current.value.trendTitle)
 const shift = (delta) => (anchor.value = current.value.shift(anchor.value, delta))
-const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === todayStr().slice(0, current.value.prefixLen))
+const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === today.value.slice(0, current.value.prefixLen))
 </script>
 
 <template>
@@ -47,7 +52,7 @@ const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === 
       <span class="title">{{ title }}</span>
       <button class="arrow" aria-label="下一個" @click="shift(1)">›</button>
     </div>
-    <button v-if="!isNow" class="now" @click="anchor = todayStr()">回到現在</button>
+    <button v-if="!isNow" class="now" @click="anchor = today">回到現在</button>
   </header>
 
   <section class="card doughnut">

@@ -1,14 +1,16 @@
 <script setup>
 import { computed } from 'vue'
 import { categoryOf } from '../lib/categories.js'
-import { todayStr, formatDate, formatMonthDay } from '../lib/dates.js'
+import { formatDate, formatMonthDay } from '../lib/dates.js'
 import { fmtMoney } from '../lib/money.js'
 import CategoryIcon from './CategoryIcon.vue'
+import { useToday } from '../composables/useToday.js'
 
 const props = defineProps({ date: String, records: Array, loading: Boolean })
 defineEmits(['edit'])
 
-const title = computed(() => (props.date === todayStr() ? `今天 ${formatMonthDay(props.date)}` : formatDate(props.date)))
+const today = useToday()
+const title = computed(() => (props.date === today.value ? `今天 ${formatMonthDay(props.date)}` : formatDate(props.date)))
 const dayTotal = computed(() => props.records.filter((r) => r.kind === 'expense').reduce((s, r) => s + r.amount, 0))
 const label = (r) => (r.kind === 'deposit' ? '存入共同錢包' : r.note || categoryOf(r.category).label)
 </script>

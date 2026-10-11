@@ -1,13 +1,14 @@
 <script setup>
 import { computed } from 'vue'
-import { calendarCells, todayStr } from '../lib/dates.js'
+import { calendarCells } from '../lib/dates.js'
 import { shortMoney } from '../lib/money.js'
+import { useToday } from '../composables/useToday.js'
 
 const props = defineProps({ yearMonth: String, selected: String, summaries: Object })
 defineEmits(['select'])
 
 const cells = computed(() => calendarCells(props.yearMonth))
-const today = todayStr()
+const today = useToday()
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日']
 
 </script>
