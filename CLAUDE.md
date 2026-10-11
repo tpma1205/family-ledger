@@ -11,13 +11,13 @@ npm test               # 全部測試
 npx vitest run -t "餘額"   # 只跑符合名稱的測試
 ```
 
-測試只有一個檔案：`src/lib/ledger.test.js`。
+測試只放在 `src/lib/` 的 `*.test.js`（`ledger.test.js`、`amountInput.test.js`），不為 Vue 元件寫測試。
 
 ## 架構
 
 三層，界線刻意保持清楚：
 
-1. **`src/lib/ledger.js`** — 純函式領域模組，輸入存款與消費陣列，輸出餘額、月曆每日小計、某日紀錄、區間統計。**沒有任何 Supabase 或 Vue 依賴，是唯一寫測試的地方**（約定的測試接縫，見 `docs/spec.md` 的 Testing Decisions）。算錢的邏輯一律放這裡。
+1. **`src/lib/ledger.js`** — 純函式領域模組，輸入存款與消費陣列，輸出餘額、月曆每日小計、某日紀錄、區間統計。**沒有任何 Supabase 或 Vue 依賴，是主要的測試接縫**（見 `docs/spec.md` 的 Testing Decisions；同層的 `amountInput.js` 是表單數字鍵盤規則，也有測試）。算錢的邏輯一律放這裡。
 2. **`src/lib/api.js`** — Supabase CRUD 薄層。`listAll()` 一次撈全部（內部 range 分頁，Supabase 單次上限 1000 列）；所有錯誤轉成同一句使用者可讀訊息。
 3. **`src/composables/` 與 `src/components/`** — Vue 狀態與畫面。`useLedger` 持有全域紀錄陣列，**寫入成功後一律重新 `listAll()`**，不做樂觀更新，也沒有即時訂閱。
 
