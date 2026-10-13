@@ -1,7 +1,7 @@
 // 純函式領域模組：輸入存款與消費陣列，輸出餘額與各種彙總。
 // 紀錄的 date 一律是 'YYYY-MM-DD' 字串，不涉時區。
 
-const sum = (records) => records.reduce((total, r) => total + r.amount, 0)
+export const sum = (records) => records.reduce((total, r) => total + r.amount, 0)
 
 // 餘額 = Σ存款 − Σ消費
 export function balance(deposits, expenses) {
@@ -29,14 +29,19 @@ export function recordsOn(deposits, expenses, date) {
 
 const daysInMonth = (year, month) => new Date(year, month, 0).getDate() // month 1-12
 
-// 統計區間：以 anchor（'YYYY-MM-DD'）為錨點，粒度為 day / month / year
-export function periodStats(expenses, { granularity, anchor }) {
+// 統計區間內的消費：以 anchor（'YYYY-MM-DD'）為錨點，粒度為 day / month / year
+function inPeriod(expenses, { granularity, anchor }) {
   const prefix = { day: anchor, month: anchor.slice(0, 7), year: anchor.slice(0, 4) }[granularity]
-  const inPeriod = expenses.filter((r) => r.date.startsWith(prefix))
-  const total = sum(inPeriod)
+  return expenses.filter((r) => r.date.startsWith(prefix))
+}
+
+// 統計區間的總額、分類彙總與趨勢
+export function periodStats(expenses, { granularity, anchor }) {
+  const records = inPeriod(expenses, { granularity, anchor })
+  const total = sum(records)
 
   const byCategoryMap = {}
-  for (const r of inPeriod) {
+  for (const r of records) {
     const c = (byCategoryMap[r.category] ??= { category: r.category, count: 0, amount: 0 })
     c.count += 1
     c.amount += r.amount
@@ -45,7 +50,14 @@ export function periodStats(expenses, { granularity, anchor }) {
     .sort((a, b) => b.amount - a.amount)
     .map((c) => ({ ...c, ratio: c.amount / total }))
 
-  return { total, byCategory, trend: trendFor(inPeriod, granularity, anchor) }
+  return { total, byCategory, trend: trendFor(records, granularity, anchor) }
+}
+
+// 分類消費清單：某分類在統計區間內的消費，依日期、再依建立時間由早到晚
+export function categoryExpenses(expenses, { granularity, anchor, category }) {
+  return inPeriod(expenses, { granularity, anchor })
+    .filter((r) => r.category === category)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.created_at.localeCompare(b.created_at))
 }
 
 // 月 → 每天一根；年 → 每月一根；日 → 無趨勢

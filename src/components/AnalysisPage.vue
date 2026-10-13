@@ -2,13 +2,14 @@
 import { ref, computed } from 'vue'
 import { useLedger } from '../composables/useLedger.js'
 import { useToday, followToday } from '../composables/useToday.js'
-import { periodStats } from '../lib/ledger.js'
+import { periodStats, categoryExpenses } from '../lib/ledger.js'
 import { shiftDay, shiftMonthKeepDay, shiftYearKeepDay, formatDate, formatYearMonth } from '../lib/dates.js'
 import { fmtMoney } from '../lib/money.js'
 import { categoryOf } from '../lib/categories.js'
 import DoughnutChart from './DoughnutChart.vue'
 import TrendChart from './TrendChart.vue'
 import CategoryIcon from './CategoryIcon.vue'
+import CategoryExpenseSheet from './CategoryExpenseSheet.vue'
 
 const { expenses } = useLedger()
 
@@ -30,6 +31,11 @@ const current = computed(() => GRANULARITIES.find((g) => g.key === granularity.v
 const title = computed(() => current.value.title(anchor.value))
 const trendTitle = computed(() => current.value.trendTitle)
 const shift = (delta) => (anchor.value = current.value.shift(anchor.value, delta))
+// 分類消費清單：只記住開的是哪個分類，清單隨紀錄與區間即時重算
+const openCategory = ref(null)
+const openCategoryExpenses = computed(() =>
+  openCategory.value && categoryExpenses(expenses.value, { granularity: granularity.value, anchor: anchor.value, category: openCategory.value }),
+)
 const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === today.value.slice(0, current.value.prefixLen))
 </script>
 
@@ -62,11 +68,14 @@ const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === 
     <p v-if="!stats.byCategory.length" class="empty">這段期間沒有消費。</p>
     <ul v-else>
       <li v-for="c in stats.byCategory" :key="c.category">
-        <CategoryIcon :category="c.category" :size="30" />
-        <span class="name">{{ categoryOf(c.category).label }}</span>
-        <span class="count num">{{ c.count }} 筆</span>
-        <span class="pct num">{{ Math.round(c.ratio * 100) }}%</span>
-        <span class="amount num">${{ fmtMoney(c.amount) }}</span>
+        <button class="row" @click="openCategory = c.category">
+          <CategoryIcon :category="c.category" :size="30" />
+          <span class="name">{{ categoryOf(c.category).label }}</span>
+          <span class="count num">{{ c.count }} 筆</span>
+          <span class="pct num">{{ Math.round(c.ratio * 100) }}%</span>
+          <span class="amount num">${{ fmtMoney(c.amount) }}</span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </button>
       </li>
     </ul>
   </section>
@@ -75,6 +84,15 @@ const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === 
     <h3>{{ trendTitle }}</h3>
     <TrendChart :trend="stats.trend" />
   </section>
+
+  <CategoryExpenseSheet
+    v-if="openCategory"
+    :category="openCategory"
+    :records="openCategoryExpenses"
+    :period-title="title"
+    :show-date="granularity !== 'day'"
+    @close="openCategory = null"
+  />
 </template>
 
 <style scoped>
@@ -98,11 +116,13 @@ const isNow = computed(() => anchor.value.slice(0, current.value.prefixLen) === 
 .card.doughnut { margin-top: -24px; padding: 8px 8px 4px; }
 h3 { margin: 0 0 10px; font-size: 14px; font-weight: 500; color: var(--muted); }
 ul { list-style: none; margin: 0; padding: 0; }
-li { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 4px; margin: 0 -4px; box-sizing: content-box; text-align: left; border-radius: 10px; }
+.row:active { background: var(--page); }
 li + li { border-top: 1px solid var(--hair); }
 .name { flex: 1; font-size: 15px; }
 .count { font-size: 13px; color: var(--muted); }
 .pct { font-size: 13px; color: var(--muted); min-width: 36px; text-align: right; }
 .amount { font-size: 16px; font-weight: 500; min-width: 80px; text-align: right; }
+.chevron { font-size: 20px; line-height: 1; color: var(--muted); margin-left: -4px; }
 .empty { margin: 0; color: var(--muted); font-size: 14px; }
 </style>

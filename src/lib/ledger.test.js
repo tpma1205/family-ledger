@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { balance, daySummaries, recordsOn, periodStats } from './ledger.js'
+import { balance, daySummaries, recordsOn, periodStats, categoryExpenses } from './ledger.js'
 
 const d = (amount, date) => ({ amount, date })
 const e = (amount, date, category = 'food') => ({ amount, date, category })
@@ -129,5 +129,49 @@ describe('統計區間', () => {
     const s = periodStats(expenses, { granularity: 'year', anchor: '2026-06-01' })
     const total = s.byCategory.reduce((acc, c) => acc + c.ratio, 0)
     expect(total).toBeCloseTo(1, 10)
+  })
+})
+
+describe('分類消費清單', () => {
+  const x = (id, amount, date, category, created_at) => ({ id, amount, date, category, created_at })
+  const expenses = [
+    x(1, 300, '2026-09-19', 'food', '2026-09-19T12:00:00Z'),
+    x(2, 120, '2026-09-19', 'food', '2026-09-19T08:00:00Z'),
+    x(3, 420, '2026-09-19', 'transport', '2026-09-19T09:00:00Z'),
+    x(4, 80, '2026-09-02', 'food', '2026-09-02T10:00:00Z'),
+    x(5, 99, '2026-08-31', 'food', '2026-08-31T10:00:00Z'),
+    x(6, 50, '2026-01-05', 'food', '2026-01-05T10:00:00Z'),
+    x(7, 10, '2025-12-31', 'food', '2025-12-31T10:00:00Z'),
+  ]
+  const ids = (list) => list.map((r) => r.id)
+
+  it('日區間：只回傳那一天該分類的消費', () => {
+    expect(ids(categoryExpenses(expenses, { granularity: 'day', anchor: '2026-09-19', category: 'food' }))).toEqual([2, 1])
+  })
+
+  it('月區間：依日期由早到晚，同日依 created_at，不含上個月最後一天', () => {
+    expect(ids(categoryExpenses(expenses, { granularity: 'month', anchor: '2026-09-05', category: 'food' }))).toEqual([4, 2, 1])
+  })
+
+  it('年區間：不含去年 12/31', () => {
+    expect(ids(categoryExpenses(expenses, { granularity: 'year', anchor: '2026-06-01', category: 'food' }))).toEqual([6, 5, 4, 2, 1])
+  })
+
+  it('不依賴輸入順序', () => {
+    const shuffled = [...expenses].reverse()
+    expect(ids(categoryExpenses(shuffled, { granularity: 'month', anchor: '2026-09-05', category: 'food' }))).toEqual([4, 2, 1])
+  })
+
+  it('該分類在區間內沒有消費時回傳空陣列', () => {
+    expect(categoryExpenses(expenses, { granularity: 'month', anchor: '2026-09-05', category: 'home' })).toEqual([])
+  })
+
+  it('筆數與金額和統計區間的分類彙總一致', () => {
+    const period = { granularity: 'year', anchor: '2026-06-01' }
+    for (const c of periodStats(expenses, period).byCategory) {
+      const list = categoryExpenses(expenses, { ...period, category: c.category })
+      expect(list).toHaveLength(c.count)
+      expect(list.reduce((s, r) => s + r.amount, 0)).toBe(c.amount)
+    }
   })
 })

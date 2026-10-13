@@ -41,3 +41,7 @@ export const formatMonthDay = (dateStr) => {
   const [, m, d] = dateStr.split('-')
   return `${Number(m)} 月 ${Number(d)} 日`
 }
+export const formatShortDate = (dateStr) => {
+  const [, m, d] = dateStr.split('-')
+  return `${Number(m)}/${Number(d)}`
+}
